@@ -34,6 +34,7 @@ class Application(tk.Frame):
         self.pack()
         self.create_header()
         self.create_text_input()
+        self.create_page_pagination()
         self.create_gallery()
         self.save_description("./img/test.gif")
         # print(self.read_description("./img/test.gif"))
@@ -47,6 +48,28 @@ class Application(tk.Frame):
         self.input_textbox.pack(side="top")
         self.input_textbox.bind("<<TextModified>>", self.search_img)
         self.input_textbox.bind("<Return>", self.reset_text)
+
+    def create_page_pagination(self):
+        paginationFrame = tk.Frame(root)
+        paginationFrame.pack()
+        next_btn = tk.Label(paginationFrame, text="BACK")
+        next_btn.bind("<Button-1>", self.backPage)
+        next_btn.pack(side="left")
+        self.current_page_label = tk.Label(paginationFrame, text=" - " + str(self.current_page_index) + " - ")
+        self.current_page_label.pack(side="left")
+        next_btn = tk.Label(paginationFrame, text ="NEXT")
+        next_btn.bind("<Button-1>", self.nextPage)
+        next_btn.pack(side="left")
+
+
+    def nextPage(self,event):
+        self.current_page_index += 1
+        self.reload_gallery()
+
+    def backPage(self,event):
+        if self.current_page_index >= 1:
+            self.current_page_index -= 1
+            self.reload_gallery()
 
     def reset_text(self, event):
         # reset text input
@@ -68,9 +91,13 @@ class Application(tk.Frame):
 
     def search_img(self, event):
         self.input = event.widget.get("1.0", "end-1c")
+        self.current_page_index = 1
+        self.reload_gallery()
+
+    def reload_gallery(self):
         self.gallery_frame.pack_forget()
         self.create_gallery()
-
+        self.current_page_label['text'] = " - " + str(self.current_page_index) + " - "
 
     def create_sub_gallery(self,frame, imagePath, imageName):
         self.save_description(imagePath)
