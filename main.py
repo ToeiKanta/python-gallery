@@ -12,13 +12,16 @@ class Application(tk.Frame):
         self.pack()
         self.create_header()
         self.create_text_input()
-        # self.create_gallery()
+        self.create_gallery()
 
     def create_text_input(self):
-
+        self.input_frame = tk.Frame(root, width=100, height=100)
+        self.input_frame.pack()
         # Text input
-        text1 = tk.Text(root, height=1, width=30, bg="gray", highlightthickness=0)
+        text1 = tk.Text(self.input_frame, height=1, width=20, bg="gray", highlightthickness=0)
+        # text1.grid(sticky="n")
         text1.pack(side="top")
+
         # Search button
         # btn = tk.Button(self, text="ค้นหา")
         # btn["command"] = self.search("test")
@@ -27,35 +30,27 @@ class Application(tk.Frame):
     def search(self, text):
         print("u search: " + text)
 
-    def create_gallery(self):
-        photo = ImageTk.PhotoImage(Image.open("img/test2.gif"))
-        img = tk.Label(self, image=photo)
+    def create_sub_gallery(self, imagePath):
+        origin = Image.open(imagePath)
+        resized = origin.resize((100, 100), Image.ANTIALIAS)
+        photo = ImageTk.PhotoImage(resized)
+        img = tk.Label(self.gallery_frame, image=photo)
         img.image = photo
         img.pack(side=tk.LEFT)
 
-        text2 = tk.Text(root, height=20, width=50)
-        scroll = tk.Scrollbar(root, command=text2.yview)
-        text2.configure(yscrollcommand=scroll.set)
-        text2.tag_configure('bold_italics', font=('Arial', 12, 'bold', 'italic'))
-        text2.tag_configure('big', font=('Verdana', 20, 'bold'))
-        text2.tag_configure('color',
-                            foreground='#476042',
-                            font=('Tempus Sans ITC', 12, 'bold'))
-        text2.tag_bind('follow',
-                       '<1>',
-                       lambda e, t=text2: t.insert(tk.END, "Not now, maybe later!"))
-        text2.insert(tk.END, '\nWilliam Shakespeare\n', 'big')
-        quote = """
-        To be, or not to be that is the question:
-        Whether 'tis Nobler in the mind to suffer
-        The Slings and Arrows of outrageous Fortune,
-        Or to take Arms against a Sea of troubles,
-        """
-        text2.insert(tk.END, quote, 'color')
-        text2.insert(tk.END, 'follow-up\n', 'follow')
-        text2.pack(side=tk.LEFT)
-        scroll.pack(side=tk.RIGHT, fill=tk.Y)
-
+    def create_gallery(self):
+        self.gallery_frame = tk.Frame(root,width=100, height=100)
+        self.gallery_frame.pack()
+        self.create_sub_gallery("img/test.gif")
+        self.create_sub_gallery("img/test2.gif")
+        self.create_sub_gallery("img/test.gif")
+        self.create_sub_gallery("img/test2.gif")
+        self.create_sub_gallery("img/test.gif")
+        self.create_sub_gallery("img/test2.gif")
+        self.create_sub_gallery("img/test.gif")
+        self.create_sub_gallery("img/test2.gif")
+        self.create_sub_gallery("img/test.gif")
+        self.create_sub_gallery("img/test2.gif")
     def create_header(self):
         var = tk.StringVar()
         text_header = tk.Label(self, textvariable=var)
