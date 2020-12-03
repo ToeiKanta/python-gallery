@@ -2,6 +2,7 @@
 import tkinter as tk
 from PIL import ImageTk, Image
 import os
+import pyexiv2
 
 # Press ⌃R to execute it or replace it with your code.
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
@@ -33,6 +34,8 @@ class Application(tk.Frame):
         self.create_header()
         self.create_text_input()
         self.create_gallery()
+        self.save_description("./img/test.gif")
+        # print(self.read_description("./img/test.gif"))
 
     def create_text_input(self):
         self.input_frame = tk.Frame(root, width=100, height=100)
@@ -52,6 +55,18 @@ class Application(tk.Frame):
         # self.gallery_frame.pack_forget()
         # self.create_gallery()
 
+    def save_description(self, image_path):
+        img = pyexiv2.Image(image_path, encoding='utf-8')
+        userdata = {'Xmp.dc.desciption' : "ทดสอบ รายละเอียด"}
+        img.modify_xmp(userdata)
+        img.close()
+
+    def read_description(self, image_path):
+        img = pyexiv2.Image(image_path, encoding='utf-8')
+        metadata = img.read_xmp()
+        img.close()
+        return metadata['Xmp.dc.desciption']
+
     def search_img(self, event):
         self.input = event.widget.get("1.0", "end-1c")
         self.gallery_frame.pack_forget()
@@ -59,6 +74,7 @@ class Application(tk.Frame):
 
 
     def create_sub_gallery(self,frame, imagePath, imageName):
+        self.save_description(imagePath)
         frame = tk.Frame(frame)
         frame.pack(side="left", padx=20, pady=20) # pack frame to gallery_frame
         # picture
@@ -71,9 +87,10 @@ class Application(tk.Frame):
         # picture name
         var = tk.StringVar()
         text_header = tk.Label(frame, textvariable=var)
-        text_header.config(height=1)
+        text_header.config(height=3)
         text_header.pack(side="bottom")
-        var.set(imageName)
+        var.set(imageName + "\n" + self.read_description(imagePath))
+
 
     def create_gallery(self):
         self.gallery_frame = tk.Frame(root, width=100, height=100)
@@ -89,6 +106,7 @@ class Application(tk.Frame):
                 if(i % 5 == 0):
                     row = tk.Frame(self.gallery_frame)
                     row.pack()
+
                 self.create_sub_gallery(row, os.path.join(dataPath, file), file)
                 i += 1
 
