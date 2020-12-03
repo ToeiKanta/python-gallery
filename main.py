@@ -38,18 +38,28 @@ class Application(tk.Frame):
         self.input_frame = tk.Frame(root, width=100, height=100)
         self.input_frame.pack()
         # Text input
-        self.input_text = CustomText(self.input_frame, height=1, width=20, bg="gray", highlightthickness=0)
+        self.input_textbox = CustomText(self.input_frame, height=1, width=20, bg="gray", highlightthickness=0)
         # text1.grid(sticky="n")
-        self.input_text.pack(side="top")
-        self.input_text.bind("<<TextModified>>", self.search)
+        self.input_textbox.pack(side="top")
+        self.input_textbox.bind("<<TextModified>>", self.search_img)
+        self.input_textbox.bind("<Return>", self.reset_text)
 
-    def search(self, event):
+    def reset_text(self, event):
+        # reset text input
+        self.input_textbox.delete("1.0", "end")
+        self.input_textbox.insert("1.0", "")
+        self.input = ""
+        # self.gallery_frame.pack_forget()
+        # self.create_gallery()
+
+    def search_img(self, event):
         self.input = event.widget.get("1.0", "end-1c")
         self.gallery_frame.pack_forget()
         self.create_gallery()
 
-    def create_sub_gallery(self, imagePath, imageName):
-        frame = tk.Frame(self.gallery_frame)
+
+    def create_sub_gallery(self,frame, imagePath, imageName):
+        frame = tk.Frame(frame)
         frame.pack(side="left", padx=20, pady=20) # pack frame to gallery_frame
         # picture
         origin = Image.open(imagePath)
@@ -66,13 +76,21 @@ class Application(tk.Frame):
         var.set(imageName)
 
     def create_gallery(self):
-        self.gallery_frame = tk.Frame(root,width=100, height=100)
+        self.gallery_frame = tk.Frame(root, width=100, height=100)
         self.gallery_frame.pack()
         dataPath = "./img"
+        print("=" + self.input + "=")
+        i = 0
+        row = tk.Frame(self.gallery_frame)
+        row.pack()
         for file in os.listdir(dataPath):
             if (file.endswith(".gif") or file.endswith(".jpg") or file.endswith(".png") or file.endswith(".jpeg"))\
-                    and self.input in file:
-                self.create_sub_gallery(os.path.join(dataPath, file),file)
+                    and self.input.replace("\n", "") in file:
+                if(i % 5 == 0):
+                    row = tk.Frame(self.gallery_frame)
+                    row.pack()
+                self.create_sub_gallery(row, os.path.join(dataPath, file), file)
+                i += 1
 
     def create_header(self):
         var = tk.StringVar()
