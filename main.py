@@ -56,12 +56,12 @@ class Application(tk.Frame):
     def create_page_pagination(self):
         paginationFrame = tk.Frame(root,pady=5)
         paginationFrame.pack()
-        next_btn = tk.Label(paginationFrame, text="BACK", borderwidth=2, relief="raised")
+        next_btn = tk.Label(paginationFrame, text="BACK", borderwidth=2, relief="raised", cursor="hand2")
         next_btn.bind("<Button-1>", self.backPage)
         next_btn.pack(side="left")
         self.current_page_label = tk.Label(paginationFrame, text=" - page " + str(self.current_page_index) + " - ")
         self.current_page_label.pack(side="left")
-        next_btn = tk.Label(paginationFrame, text="NEXT", borderwidth=2, relief="raised")
+        next_btn = tk.Label(paginationFrame, text="NEXT", borderwidth=2, relief="raised", cursor="hand2")
         next_btn.bind("<Button-1>", self.nextPage)
         next_btn.pack(side="left")
 
@@ -108,9 +108,9 @@ class Application(tk.Frame):
         self.input_textbox.insert("1.0", "")
         self.input = ""
 
-    def save_description(self, image_path):
+    def save_description(self, image_path, desc):
         img = pyexiv2.Image(image_path, encoding='utf-8')
-        userdata = {'Xmp.dc.desciption' : "ทดสอบ รายละเอียด"}
+        userdata = {'Xmp.dc.desciption' : desc}
         img.modify_xmp(userdata)
         img.close()
 
@@ -133,7 +133,6 @@ class Application(tk.Frame):
         self.current_page_label['text'] = " - page " + str(self.current_page_index) + " - "
 
     def create_sub_gallery(self,frame, imagePath, imageName):
-        self.save_description(imagePath)
         frame = tk.Frame(frame)
         frame.pack(side="left", padx=20, pady=20) # pack frame to gallery_frame
         # picture
@@ -148,7 +147,12 @@ class Application(tk.Frame):
         text_header = tk.Label(frame, textvariable=var)
         text_header.config(height=3)
         text_header.pack(side="bottom")
-        var.set(imageName + "\n" + self.read_description(imagePath))
+        try:
+            desc = self.read_description(imagePath)
+        except:
+            self.save_description(imagePath, "default description")
+            desc = self.read_description(imagePath)
+        var.set(imageName + "\n" + desc)
 
 
     def create_gallery(self):
@@ -192,4 +196,3 @@ if __name__ == '__main__':
     root.title("Python Gallery")
     app = Application(root)
     app.mainloop()
-
