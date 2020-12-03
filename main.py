@@ -4,8 +4,6 @@ from PIL import ImageTk, Image
 import os
 import pyexiv2
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
 class CustomText(tk.Text):
     def __init__(self, *args, **kwargs):
         """A text widget that report on internal widget commands"""
@@ -28,6 +26,9 @@ class CustomText(tk.Text):
 class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
+        self.current_page_index = 1
+        self.img_per_row = 2
+        self.img_row_count = 3
         self.input = ""
         self.master = master
         self.pack()
@@ -52,8 +53,6 @@ class Application(tk.Frame):
         self.input_textbox.delete("1.0", "end")
         self.input_textbox.insert("1.0", "")
         self.input = ""
-        # self.gallery_frame.pack_forget()
-        # self.create_gallery()
 
     def save_description(self, image_path):
         img = pyexiv2.Image(image_path, encoding='utf-8')
@@ -97,18 +96,22 @@ class Application(tk.Frame):
         self.gallery_frame.pack()
         dataPath = "./img"
         print("=" + self.input + "=")
+        start_i = (self.current_page_index-1) * (self.img_per_row * self.img_row_count)
         i = 0
         row = tk.Frame(self.gallery_frame)
-        row.pack()
+        row.pack(side="top")
         for file in os.listdir(dataPath):
-            if (file.endswith(".gif") or file.endswith(".jpg") or file.endswith(".png") or file.endswith(".jpeg"))\
-                    and self.input.replace("\n", "") in file:
-                if(i % 5 == 0):
+            if (file.endswith(".gif") or file.endswith(".jpg") or file.endswith(".png") or file.endswith(".jpeg")) and self.input.replace("\n", "") in file:
+                if i < start_i:
+                    i += 1
+                    continue
+                if(i % self.img_per_row == 0):
                     row = tk.Frame(self.gallery_frame)
-                    row.pack()
-
-                self.create_sub_gallery(row, os.path.join(dataPath, file), file)
+                    row.pack(side="top")
                 i += 1
+                if i > (self.current_page_index) * (self.img_per_row * self.img_row_count):
+                    break
+                self.create_sub_gallery(row, os.path.join(dataPath, file), file)
 
     def create_header(self):
         var = tk.StringVar()
