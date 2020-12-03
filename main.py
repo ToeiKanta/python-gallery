@@ -3,6 +3,7 @@ import tkinter as tk
 from PIL import ImageTk, Image
 import os
 import pyexiv2
+from tkinter import ttk
 
 class CustomText(tk.Text):
     def __init__(self, *args, **kwargs):
@@ -27,37 +28,40 @@ class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.current_page_index = 1
-        self.img_per_row = 2
+        self.img_per_row = 5
         self.img_row_count = 3
         self.input = ""
         self.master = master
         self.pack()
-        self.create_header()
+        self.create_row_item_selection()
         self.create_text_input()
         self.create_page_pagination()
         self.create_gallery()
-        self.save_description("./img/test.gif")
-        # print(self.read_description("./img/test.gif"))
 
     def create_text_input(self):
         self.input_frame = tk.Frame(root, width=100, height=100)
         self.input_frame.pack()
+        # header lable
+        var = tk.StringVar()
+        text_header = tk.Label(self.input_frame, textvariable=var, height=2)
+        text_header.pack(side="top")
+        var.set("PLEASE ENTER IMAGE NAME BELOW")
         # Text input
-        self.input_textbox = CustomText(self.input_frame, height=1, width=20, bg="gray", highlightthickness=0)
+        self.input_textbox = CustomText(self.input_frame, height=1, width=20, font=("Helvetica", 19), bg="gray", highlightthickness=0)
         # text1.grid(sticky="n")
         self.input_textbox.pack(side="top")
         self.input_textbox.bind("<<TextModified>>", self.search_img)
         self.input_textbox.bind("<Return>", self.reset_text)
 
     def create_page_pagination(self):
-        paginationFrame = tk.Frame(root)
+        paginationFrame = tk.Frame(root,pady=5)
         paginationFrame.pack()
-        next_btn = tk.Label(paginationFrame, text="BACK")
+        next_btn = tk.Label(paginationFrame, text="BACK", borderwidth=2, relief="raised")
         next_btn.bind("<Button-1>", self.backPage)
         next_btn.pack(side="left")
-        self.current_page_label = tk.Label(paginationFrame, text=" - " + str(self.current_page_index) + " - ")
+        self.current_page_label = tk.Label(paginationFrame, text=" - page " + str(self.current_page_index) + " - ")
         self.current_page_label.pack(side="left")
-        next_btn = tk.Label(paginationFrame, text ="NEXT")
+        next_btn = tk.Label(paginationFrame, text="NEXT", borderwidth=2, relief="raised")
         next_btn.bind("<Button-1>", self.nextPage)
         next_btn.pack(side="left")
 
@@ -66,10 +70,37 @@ class Application(tk.Frame):
         self.current_page_index += 1
         self.reload_gallery()
 
-    def backPage(self,event):
-        if self.current_page_index >= 1:
+    def backPage(self, event):
+        if self.current_page_index > 1:
             self.current_page_index -= 1
             self.reload_gallery()
+
+    def row_select_handle(self, event):
+        self.img_row_count = int(event.widget.get())
+        self.reload_gallery()
+
+    def item_count_select_handle(self, event):
+        self.img_per_row = int(event.widget.get())
+        self.reload_gallery()
+
+    def create_row_item_selection(self):
+        # row count
+        frame = tk.Frame(root,width=50)
+        frame.pack()
+        rowLabel = tk.Label(frame, text="Table dimension:")
+        rowLabel.pack(side="left")
+        comboExample = ttk.Combobox(frame, state="readonly", values=[1, 2, 3, 4], width=3)
+        comboExample.pack(side="left")
+        comboExample.current(self.img_row_count-1)
+        comboExample.bind("<<ComboboxSelected>>", self.row_select_handle)
+        # item per row
+        rowLabel = tk.Label(frame,
+                            text="X")
+        rowLabel.pack(side="left")
+        comboExample = ttk.Combobox(frame, state="readonly", values=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], width=3)
+        comboExample.pack(side="left")
+        comboExample.current(self.img_per_row-1)
+        comboExample.bind("<<ComboboxSelected>>", self.item_count_select_handle)
 
     def reset_text(self, event):
         # reset text input
@@ -95,9 +126,11 @@ class Application(tk.Frame):
         self.reload_gallery()
 
     def reload_gallery(self):
-        self.gallery_frame.pack_forget()
+        # for child in self.gallery_frame.winfo_children():
+        #     child.destroy()
+        self.gallery_frame.destroy()
         self.create_gallery()
-        self.current_page_label['text'] = " - " + str(self.current_page_index) + " - "
+        self.current_page_label['text'] = " - page " + str(self.current_page_index) + " - "
 
     def create_sub_gallery(self,frame, imagePath, imageName):
         self.save_description(imagePath)
@@ -140,14 +173,6 @@ class Application(tk.Frame):
                     break
                 self.create_sub_gallery(row, os.path.join(dataPath, file), file)
 
-    def create_header(self):
-        var = tk.StringVar()
-        text_header = tk.Label(self, textvariable=var)
-        text_header.config(height=2)
-        text_header.pack(side="top")
-        var.set("PLEASE ENTER IMAGE NAME")
-
-
     def create_widgets(self):
         self.hi_there = tk.Button(self)
         self.hi_there["text"] = "Hello World\n(click me)"
@@ -163,7 +188,7 @@ class Application(tk.Frame):
 
 if __name__ == '__main__':
     root = tk.Tk()
-    # app = tk.Frame(root, width=100, height=100, background="bisque")
+    # root.geometry('500x800')
     app = Application(root)
     app.mainloop()
 
