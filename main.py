@@ -189,6 +189,7 @@ class Application(tk.Frame):
 if __name__ == '__main__':
     root = tk.Tk()
     # root.geometry('500x800')
+    root.title("Python Gallery")
     app = Application(root)
     app.mainloop()
 
