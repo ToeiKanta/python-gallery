@@ -1,0 +1,4 @@
+appdirs==1.4.4
+Pillow==8.0.1
+pygubu==0.10.3
+pygubu-designer==0.11
