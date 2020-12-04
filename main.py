@@ -47,7 +47,7 @@ class Application(tk.Frame):
         text_header.pack(side="top")
         var.set("PLEASE ENTER IMAGE NAME BELOW")
         # Text input
-        self.input_textbox = tk.Text(self.input_frame, height=1, width=20, font=("Helvetica", 19), bg="gray", highlightthickness=0)
+        self.input_textbox = CustomText(self.input_frame, height=1, width=20, font=("Helvetica", 19), bg="gray", highlightthickness=0)
         # text1.grid(sticky="n")
         self.input_textbox.pack(side="top")
         self.input_textbox.bind("<<TextModified>>", self.search_img)
@@ -162,7 +162,7 @@ class Application(tk.Frame):
         image_label = tk.Label(right_frame, text=temp_text, justify="left", font=("Courier", 12))
         image_label.pack(side="top",anchor="nw")
         # description text area
-        desc = CustomText(right_frame, font=("Courier", 14))
+        desc = tk.Text(right_frame, font=("Courier", 14))
         desc.insert(tk.INSERT, self.read_description(full_image_path))
         desc.pack(side="top")
         desc.focus_set()
