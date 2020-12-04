@@ -4,6 +4,8 @@ from PIL import ImageTk, Image
 import os
 import pyexiv2
 from tkinter import ttk
+import threading
+import time
 
 class CustomText(tk.Text):
     def __init__(self, *args, **kwargs):
@@ -30,28 +32,49 @@ class Application(tk.Frame):
         self.current_page_index = 1
         self.img_per_row = 5
         self.img_row_count = 3
+        self.auto_search = False
         self.input = ""
         self.master = master
         self.pack()
         self.create_row_item_selection()
-        self.create_text_input()
+        self.create_text_input_frame()
         self.create_page_pagination()
         self.create_gallery()
 
-    def create_text_input(self):
+    def create_text_input_frame(self):
         self.input_frame = tk.Frame(root, width=100, height=100)
-        self.input_frame.pack()
+        self.input_frame.pack(side="top")
         # header lable
         var = tk.StringVar()
         text_header = tk.Label(self.input_frame, textvariable=var, height=2)
         text_header.pack(side="top")
         var.set("PLEASE ENTER IMAGE NAME BELOW")
+        self.create_text_input()
+
+    def create_text_input(self):
+        self.input_textbox_frame = tk.Frame(self.input_frame)
+        self.input_textbox_frame.pack(side="top")
         # Text input
-        self.input_textbox = CustomText(self.input_frame, height=1, width=20, font=("Helvetica", 19), bg="gray", highlightthickness=0)
-        # text1.grid(sticky="n")
-        self.input_textbox.pack(side="top")
-        self.input_textbox.bind("<<TextModified>>", self.search_img)
-        self.input_textbox.bind("<Return>", self.reset_text)
+        self.input_textbox = CustomText(self.input_textbox_frame, height=1, width=20, font=("Helvetica", 19), bg="gray", highlightthickness=0)
+        self.input_textbox.pack(side="left")
+        if self.auto_search:
+            self.input_textbox.bind("<<TextModified>>", self.search_img)
+            self.input_textbox.bind("<Return>", self.reset_text)
+        else:
+            self.input_textbox.bind("<Return>", self.search_img_by_enter)
+        # create checkbox
+        if self.auto_search:
+            text = "AUTO SEARCH: ON"
+        else:
+            text = "AUTO SEARCH: OFF"
+        self.auto_label = tk.Label(self.input_textbox_frame, text=text, borderwidth=2, relief="raised", cursor="hand2", padx=2)
+        self.auto_label.pack(side="right")
+        self.auto_label.bind("<Button-1>", self.toggleAutoSearch)
+
+    def toggleAutoSearch(self, event):
+        self.auto_search = not self.auto_search
+        self.input_textbox_frame.destroy()
+        self.create_text_input()
 
     def create_page_pagination(self):
         paginationFrame = tk.Frame(root, pady=5)
@@ -102,12 +125,6 @@ class Application(tk.Frame):
         comboExample.current(self.img_per_row-1)
         comboExample.bind("<<ComboboxSelected>>", self.item_count_select_handle)
 
-    def reset_text(self, event):
-        # reset text input
-        self.input_textbox.delete("1.0", "end")
-        self.input_textbox.insert("1.0", "")
-        self.input = ""
-
     def save_description(self, image_path, string):
         print("save: " + image_path + " :: " + string)
         img = pyexiv2.Image(image_path, encoding='utf-8')
@@ -130,10 +147,21 @@ class Application(tk.Frame):
         img.close()
         return metadata['Xmp.dc.desciption']
 
+    def reset_text(self, event):
+        # reset text input
+        self.input_textbox.delete("1.0", "end")
+        self.input_textbox.insert("1.0", "")
+        self.input = ""
+
     def search_img(self, event):
         self.input = event.widget.get("1.0", "end-1c")
         self.current_page_index = 1
         self.reload_gallery()
+
+    def search_img_by_enter(self, event):
+        self.search_img(event)
+        self.input_textbox.delete("1.0", "end")
+        self.input_textbox.insert("1.0", "")
 
     def reload_gallery(self):
         # for child in self.gallery_frame.winfo_children():
@@ -179,17 +207,9 @@ class Application(tk.Frame):
         quit_btn.bind("<Button-1>", lambda e, newWindow=newWindow: newWindow.destroy())
         quit_btn.pack(side="top", pady=2)
 
-    def create_sub_gallery(self,frame, imagePath, imageName):
+    def create_sub_gallery(self, frame, imagePath, imageName):
         frame = tk.Frame(frame)
         frame.pack(side="left", padx=5, pady=5) # pack frame to gallery_frame
-        # picture
-        origin = Image.open(imagePath)
-        resized = origin.resize((100, 100), Image.ANTIALIAS)
-        photo = ImageTk.PhotoImage(resized)
-        img = tk.Label(frame, image=photo)
-        img.bind("<Button-1>", lambda e, imagePath=imagePath: self.go_full_image(imagePath))
-        img.image = photo
-        img.pack(side="top")
         # picture name
         var = tk.StringVar()
         text_header = tk.Label(frame, textvariable=var)
@@ -201,7 +221,14 @@ class Application(tk.Frame):
             self.save_description(imagePath, "default description")
             desc = self.read_description(imagePath)
         var.set(imageName + "\n" + desc[:30] + "...")
-
+        # picture
+        origin = Image.open(imagePath)
+        resized = origin.resize((100, 100), Image.ANTIALIAS)
+        photo = ImageTk.PhotoImage(resized)
+        img = tk.Label(frame, image=photo)
+        img.bind("<Button-1>", lambda e, imagePath=imagePath: self.go_full_image(imagePath))
+        img.image = photo
+        img.pack(side="top")
     def create_gallery(self):
         self.gallery_frame = tk.Frame(root, width=100, height=100, highlightbackground="gray", highlightcolor="gray", highlightthickness=2 )
         self.gallery_frame.pack()
@@ -223,8 +250,8 @@ class Application(tk.Frame):
                     i += 1
                     if i > (self.current_page_index) * (self.img_per_row * self.img_row_count):
                         break
-                    self.create_sub_gallery(row, os.path.join(path, file), file)
-
+                    thr = threading.Thread(target=self.create_sub_gallery(row, os.path.join(path, file), file))
+                    thr.start()
 if __name__ == '__main__':
     root = tk.Tk()
     root.geometry('1200x700')
