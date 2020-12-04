@@ -211,18 +211,19 @@ class Application(tk.Frame):
         i = 0
         row = tk.Frame(self.gallery_frame)
         row.pack(side="top")
-        for file in os.listdir(dataPath):
-            if (file.endswith(".gif") or file.endswith(".jpg") or file.endswith(".png") or file.endswith(".jpeg")) and self.input.replace("\n", "") in file:
-                if i < start_i:
+        for path, subdirs, files in os.walk(dataPath):
+            for file in files:
+                if (file.endswith(".gif") or file.endswith(".jpg") or file.endswith(".png") or file.endswith(".jpeg")) and self.input.replace("\n", "") in file:
+                    if i < start_i:
+                        i += 1
+                        continue
+                    if(i % self.img_per_row == 0):
+                        row = tk.Frame(self.gallery_frame)
+                        row.pack(side="top")
                     i += 1
-                    continue
-                if(i % self.img_per_row == 0):
-                    row = tk.Frame(self.gallery_frame)
-                    row.pack(side="top")
-                i += 1
-                if i > (self.current_page_index) * (self.img_per_row * self.img_row_count):
-                    break
-                self.create_sub_gallery(row, os.path.join(dataPath, file), file)
+                    if i > (self.current_page_index) * (self.img_per_row * self.img_row_count):
+                        break
+                    self.create_sub_gallery(row, os.path.join(path, file), file)
 
 if __name__ == '__main__':
     root = tk.Tk()
