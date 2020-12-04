@@ -174,7 +174,7 @@ class Application(tk.Frame):
         # create new window
         newWindow = tk.Toplevel(root)
         newWindow.title(full_image_path)
-        newWindow.geometry("700x500")
+        newWindow.geometry("900x500")
         # picture
         origin = Image.open(full_image_path)
         resized = origin.resize((500, 500), Image.ANTIALIAS)
