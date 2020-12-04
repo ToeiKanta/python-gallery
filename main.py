@@ -89,7 +89,7 @@ class Application(tk.Frame):
         frame.pack()
         rowLabel = tk.Label(frame, text="Table dimension:")
         rowLabel.pack(side="left")
-        comboExample = ttk.Combobox(frame, state="readonly", values=[1, 2, 3, 4], width=3)
+        comboExample = ttk.Combobox(frame, state="readonly", values=[1, 2, 3], width=3)
         comboExample.pack(side="left")
         comboExample.current(self.img_row_count-1)
         comboExample.bind("<<ComboboxSelected>>", self.row_select_handle)
@@ -97,7 +97,7 @@ class Application(tk.Frame):
         rowLabel = tk.Label(frame,
                             text="X")
         rowLabel.pack(side="left")
-        comboExample = ttk.Combobox(frame, state="readonly", values=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], width=3)
+        comboExample = ttk.Combobox(frame, state="readonly", values=[1, 2, 3, 4, 5, 6, 7, 8], width=3)
         comboExample.pack(side="left")
         comboExample.current(self.img_per_row-1)
         comboExample.bind("<<ComboboxSelected>>", self.item_count_select_handle)
@@ -202,9 +202,8 @@ class Application(tk.Frame):
             desc = self.read_description(imagePath)
         var.set(imageName + "\n" + desc[:30] + "...")
 
-
     def create_gallery(self):
-        self.gallery_frame = tk.Frame(root, width=100, height=100)
+        self.gallery_frame = tk.Frame(root, width=100, height=100, highlightbackground="gray", highlightcolor="gray", highlightthickness=2 )
         self.gallery_frame.pack()
         dataPath = "./img"
         # print("=" + self.input + "=")
@@ -227,7 +226,7 @@ class Application(tk.Frame):
 
 if __name__ == '__main__':
     root = tk.Tk()
-    # root.geometry('500x800')
+    root.geometry('1200x700')
     root.title("Python Gallery")
     app = Application(root)
     app.mainloop()
