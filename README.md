@@ -6,6 +6,16 @@ install requirment
 save requirment
 `pip freeze > requirements.txt`
 
-![](./readme/editInfo.gif)
-asd
-<iframe src="https://giphy.com/embed/bsVKcwwXXMTKYDcC19" width="480" height="300" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/bsVKcwwXXMTKYDcC19">via GIPHY</a></p>
+## Search Image - Press Enter Key
+![](readme/search.gif)
+
+## Search Image - Realtime
+![](readme/auto_search.gif)
+
+## Page pagination
+![](readme/pagination.gif)
+
+## Edit image data - Embeded to image file
+![](readme/edit_info.gif)
+
+
