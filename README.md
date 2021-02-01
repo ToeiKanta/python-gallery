@@ -17,7 +17,8 @@
 5. install requirment </br>
 `pip install -r requirements.txt`
 
-ุ## How to create exe file for Window OS
+## How to create exe file for Window OS
+
 1. call pyinstaller command </br>
 `pyinstaller -Fw --clean main.py`
 
