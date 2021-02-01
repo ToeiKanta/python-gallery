@@ -3,3 +3,4 @@ Pillow==8.0.1
 pyexiv2==2.3.2
 pygubu==0.10.3
 pygubu-designer==0.11
+installer
