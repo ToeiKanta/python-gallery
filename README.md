@@ -17,6 +17,14 @@
 5. install requirment </br>
 `pip install -r requirements.txt`
 
+ุ## How to create exe file for Window OS
+1. call pyinstaller command </br>
+`pyinstaller -Fw --clean main.py`
+
+2. copy Folder `./img` and `./icon.co` file to `./dist` folder
+
+3. run program on `./dist/main.exe`
+
 ## Notes
 - to save requirment </br>
 `pip freeze > requirements.txt`
