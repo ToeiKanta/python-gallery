@@ -287,6 +287,7 @@ if __name__ == '__main__':
     root = tk.Tk()
     ## ขนาดโปรแกรม
     root.geometry('1200x700')
+    root.iconbitmap('./icon.ico')
     ## ชื่อโปรแกรม
     root.title("Python Gallery")
     ## สร้างหน้าต่างโปรแกรมหลัก
