@@ -1,20 +1,23 @@
 # Python Gallery
 
 ## Get Start
-1. install virtualenv </br>
+1. Go to program folder.
+`cd <program_path>`
+
+2. install virtualenv </br>
 `pip install virtualenv`
 
-2. Create the virtual environment </br>
+3. Create the virtual environment </br>
 `virtualenv myenv`
 
-3. activate virtualenv for Windowed  </br>
+4. activate virtualenv for Windowed  </br>
 `Set-ExecutionPolicy Unrestricted -Scope Process` </br>
 `.\myenv\Scripts\activate`
 
-4. activate virtualenv for MacOS </br>
+5. activate virtualenv for MacOS </br>
 `source myenv/bin/activate`
 
-5. install requirment </br>
+6. install requirment </br>
 `pip install -r requirements.txt`
 
 ## How to create exe file for Window OS
