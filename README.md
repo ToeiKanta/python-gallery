@@ -1,7 +1,7 @@
 # Python Gallery
 
 ## Get Start
-1. Go to program folder.
+1. Go to program folder. </br>
 `cd <program_path>`
 
 2. install virtualenv </br>
