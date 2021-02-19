@@ -68,7 +68,7 @@ class Application(tk.Frame):
         self.input_textbox.pack(side="left")
         if self.auto_search:
             self.input_textbox.bind("<<TextModified>>", self.search_img)
-            self.input_textbox.bind("<Return>", self.reset_text)
+            self.input_textbox.bind("<Return>", self.reset_text) # เพื่อแก้บัค
         else:
             self.input_textbox.bind("<Return>", self.search_img_by_enter)
         ## สร้าง checkbox สำหรับ เปิด-ปิด โหมดค้นหาอัตโนมัติ
@@ -201,18 +201,40 @@ class Application(tk.Frame):
         newWindow = tk.Toplevel(root)
         newWindow.title(full_image_path)
         newWindow.geometry("900x500")
+        ## show picture graph
+        filename, file_extension = os.path.splitext(full_image_path)
+        # '/path/to/somefile.ext'
+        # >>> filename
+        # '/path/to/somefile'
+        # >> > file_extension
+        # '.ext'
+        full_image_graph_path = filename + "-graph" + file_extension
+        ## resize picture if having graph
+        pictureSize = (500,500)
+        if (os.path.exists(full_image_graph_path)):
+            pictureSize = (250, 250)
         ## picture
         origin = Image.open(full_image_path)
-        resized = origin.resize((500, 500), Image.ANTIALIAS)
+        resized = origin.resize(pictureSize, Image.ANTIALIAS)
         photo = ImageTk.PhotoImage(resized)
         img = tk.Label(newWindow, image=photo)
         img.image = photo
         img.pack(side="left")
+
+        if (os.path.exists(full_image_graph_path)):
+            origin = Image.open(full_image_graph_path)
+            resized = origin.resize(pictureSize, Image.ANTIALIAS)
+            photo = ImageTk.PhotoImage(resized)
+            img = tk.Label(newWindow, image=photo)
+            img.image = photo
+            img.pack(side="left")
         ## picture description
         right_frame = tk.Frame(newWindow, padx=3)
         right_frame.pack(side="left")
         ## image label
         temp_text = "Image Path: \n" + full_image_path + "\n\nImage Description:"
+        if (os.path.exists(full_image_graph_path)):
+            temp_text = "Image Path: \n" + full_image_path + "\n" + full_image_graph_path + "\n\nImage Description:"
         image_label = tk.Label(right_frame, text=temp_text, justify="left", font=("Courier", 12))
         image_label.pack(side="top",anchor="nw")
         ## description text area
@@ -269,7 +291,8 @@ class Application(tk.Frame):
         row.pack(side="top")
         for path, subdirs, files in os.walk(dataPath):
             for file in files:
-                if (file.endswith(".gif") or file.endswith(".jpg") or file.endswith(".png") or file.endswith(".jpeg")) and self.input.replace("\n", "") in file:
+                filename, file_extension = os.path.splitext(file)
+                if (file.endswith(".gif") or file.endswith(".jpg") or file.endswith(".png") or file.endswith(".jpeg")) and not filename.endswith("-graph") and self.input.replace("\n", "") in file:
                     if i < start_i:
                         i += 1
                         continue
