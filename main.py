@@ -5,6 +5,7 @@ import pyexiv2
 from tkinter import ttk
 import threading
 import pandas as pd
+from tkinter import messagebox
 
 class ScrollableFrame(tk.Frame):
     def __init__(self, container, *args, **kwargs):
@@ -68,7 +69,10 @@ class Application(tk.Frame):
         self.create_text_input_frame()
         self.create_page_pagination()
         self.create_gallery()
-
+        ## for excel
+        self.df = {} # เก็บ pandas dataframe ของแต่ละรูป - Full Image Path
+        self.excel = {} # เก็บ excel path ของแต่ละรูป - Full Image Path
+        self.numpyArr = {} # เก็บ excel numpy Array ของแต่ละรูป - Full Image Path
     ## สร้าง Frame สำหรับส่วนบนของโปรแกรม
     ## ชื่อเรื่อง ช่องค้นหา ปุ่มเปิด-ปิดโหมดค้นหาออโต้
     def create_text_input_frame(self):
@@ -173,13 +177,21 @@ class Application(tk.Frame):
         self.reload_gallery()
 
     ## ฟังชันบันทึกข้อความในลงรูปภาพ เมื่อกดปุ่ม 'บันทึก'
-    def save_description_text_box(self, image_path, desc_text_component):
+    def save_description_text_box(self, full_image_path, desc_text_component,showAlert = True):
         string = desc_text_component.get("1.0", "end-1c")
-        self.save_description(image_path, string)
+        self.save_description(full_image_path, string)
+        self.save_data_to_excel(full_image_path)
+        if showAlert:
+            messagebox.showinfo(title="บันทึกสำเร็จ", message="บันทึกข้อมูลสำเร็จ")
+
+    def save_data_to_excel(self,full_image_path):
+        if os.path.exists(self.excel[full_image_path]):
+            pd.DataFrame(self.numpyArr[full_image_path]).to_excel(self.excel[full_image_path],sheet_name='Sheet1',index=False,header=False)
 
     ## ฟังชันบันทึกข้อความในลงรูปภาพ เมื่อกดปุ่ม 'บันทึกและออก'
-    def save_description_text_box_quit(self, image_path, desc_text_component, window):
-        self.save_description_text_box(image_path, desc_text_component)
+    def save_description_text_box_quit(self, full_image_path, desc_text_component, window):
+        self.save_description_text_box(full_image_path, desc_text_component,False)
+        self.save_data_to_excel(full_image_path)
         window.destroy()
 
     ## อ่านข้อความจากรูป ที่เคยบันทึกไว้ และคืนค่าข้อความนั้น
@@ -217,16 +229,21 @@ class Application(tk.Frame):
         self.create_gallery()
         self.current_page_label['text'] = " - page " + str(self.current_page_index) + " - "
 
+    ## แสดงตาราง excel
     def get_excel(self,tab, full_image_path, sheet_name):
         excelTable = ScrollableFrame(tab)
         excelTable.pack(fill="both",expand='true')
-        filename, file_extension = os.path.splitext(full_image_path);
+        filename, file_extension = os.path.splitext(full_image_path)
         excelPath = filename+'.xlsx'
+        self.excel[full_image_path] = excelPath
         if os.path.exists(excelPath):
-            excel = pd.read_excel(excelPath, sheet_name=sheet_name)
-            # print(excel)
-            df = pd.DataFrame(excel)
-            for row in range(df.shape[0]+10):
+            excel = pd.read_excel(excelPath, sheet_name=sheet_name,header=None)
+            self.df[full_image_path] = pd.DataFrame(excel)
+            df = self.df[full_image_path]
+            ## บันทึกข้อมูลแบบ numpy เพื่อความสะดวกในการแก้ไขข้อมูล
+            self.numpyArr[full_image_path] = df.to_numpy()
+            isTable = False
+            for row in range(df.shape[0]):
                 for column in range(df.shape[1]):
                     if (row < df.shape[0]):
                         val = df.values[row][column]
@@ -237,15 +254,27 @@ class Application(tk.Frame):
                     lineH = 1
                     if type(val) == str:
                         lineH = 2
-                    label = tk.Text(excelTable.scrollable_frame, font=("Courier", 14), height=lineH,width=17)
+                    # ถ้าเจอข้อความนี้ แสดงว่าถึงแถวที่เป็นตารางข้อมูลแล้ว
+                    if val == "Peaks":
+                        isTable = True
+                    if isTable:
+                        label = CustomText(excelTable.scrollable_frame, font=("Courier", 11), height=1, width=19)  # bg="white", fg="black"
+                    else:
+                        label = CustomText(excelTable.scrollable_frame, font=("Courier", 11), height=lineH,width=19) # bg="white", fg="black"
+                    label.bind("<<TextModified>>", lambda e, full_image_path=full_image_path,row=row,column=column: self.onExcelValueChanged(full_image_path,row,column,e.widget.get("1.0", "end-1c")))
                     label.place(height=14)
                     label.insert(tk.INSERT, val)
                     # label = tk.Label(tab, text=val, padx=3, pady=3, bg="white", fg="black")
                     label.grid(row=row, column=column, sticky="nsew", padx=1, pady=1)
                     tab.grid_columnconfigure(column, weight=1)
         else:
+            label = tk.Label(excelTable.scrollable_frame, text="ไม่พบไฟล์ xlsx ใน Path\n" + excelPath)
+            label.pack(fill="both")
             print("excel path doesn't exists.")
 
+    ## event กรณีมีการแก้ไขข้อความใน Text box excel
+    def onExcelValueChanged(self,full_image_path,row,column,value):
+        self.numpyArr[full_image_path][row][column] = value
 
     ## เปืดหน้าต่างโปรแกรม สำหรับดูรูปภาพขนาดใหญ่
     def go_full_image(self, full_image_path):
@@ -271,7 +300,7 @@ class Application(tk.Frame):
         photo = ImageTk.PhotoImage(resized)
         img = tk.Label(newWindow, image=photo)
         img.image = photo
-        img.pack(side="left")
+        img.pack(side="left",ipadx=15)
 
         if (os.path.exists(full_image_graph_path)):
             origin = Image.open(full_image_graph_path)
@@ -293,20 +322,20 @@ class Application(tk.Frame):
         frameDesc = tk.Frame(right_frame)
         frameDesc.pack(fill="both")
         tableLayout = ttk.Notebook(frameDesc)
-        # Tab 1
+        # Tab Excel
+        tab1 = tk.Frame(tableLayout)
+        tab1.pack(fill="both")
+        self.get_excel(tab1, full_image_path, 'Sheet1')
+        tableLayout.add(tab1, text="Excel")
+        tableLayout.pack(fill="both")
+        # Tab Notes
         tab1 = tk.Frame(tableLayout)
         tab1.pack(fill="both")
         desc = tk.Text(tab1, font=("Courier", 14))
         desc.insert(tk.INSERT, self.read_description(full_image_path))
         desc.pack(side="top")
         desc.focus_set()
-        tableLayout.add(tab1,text="Description")
-        tableLayout.pack(fill="both")
-        # Tab 2
-        tab1 = tk.Frame(tableLayout)
-        tab1.pack(fill="both")
-        self.get_excel(tab1,full_image_path,'Sheet1')
-        tableLayout.add(tab1, text="Excel")
+        tableLayout.add(tab1,text="Notes")
         tableLayout.pack(fill="both")
         ## save button
         save_btn = tk.Label(right_frame,text="SAVE", borderwidth=2, relief="raised", cursor="hand2")
