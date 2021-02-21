@@ -4,6 +4,28 @@ import os
 import pyexiv2
 from tkinter import ttk
 import threading
+import pandas as pd
+
+class ScrollableFrame(tk.Frame):
+    def __init__(self, container, *args, **kwargs):
+        super().__init__(container, *args, **kwargs)
+        canvas = tk.Canvas(self)
+        scrollbar = tk.Scrollbar(self, orient="vertical", command=canvas.yview)
+        self.scrollable_frame = tk.Frame(canvas)
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+
+        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
 
 ## component สำหรับสร้าง TextBox ที่จะเรียก Event เมื่อมีการเปลี่ยนแปลงข้อความใน TextBox
 class CustomText(tk.Text):
@@ -195,6 +217,36 @@ class Application(tk.Frame):
         self.create_gallery()
         self.current_page_label['text'] = " - page " + str(self.current_page_index) + " - "
 
+    def get_excel(self,tab, full_image_path, sheet_name):
+        excelTable = ScrollableFrame(tab)
+        excelTable.pack(fill="both",expand='true')
+        filename, file_extension = os.path.splitext(full_image_path);
+        excelPath = filename+'.xlsx'
+        if os.path.exists(excelPath):
+            excel = pd.read_excel(excelPath, sheet_name=sheet_name)
+            # print(excel)
+            df = pd.DataFrame(excel)
+            for row in range(df.shape[0]+10):
+                for column in range(df.shape[1]):
+                    if (row < df.shape[0]):
+                        val = df.values[row][column]
+                    else:
+                        val = ""
+                    if str(val) == 'nan':
+                        val = ""
+                    lineH = 1
+                    if type(val) == str:
+                        lineH = 2
+                    label = tk.Text(excelTable.scrollable_frame, font=("Courier", 14), height=lineH,width=17)
+                    label.place(height=14)
+                    label.insert(tk.INSERT, val)
+                    # label = tk.Label(tab, text=val, padx=3, pady=3, bg="white", fg="black")
+                    label.grid(row=row, column=column, sticky="nsew", padx=1, pady=1)
+                    tab.grid_columnconfigure(column, weight=1)
+        else:
+            print("excel path doesn't exists.")
+
+
     ## เปืดหน้าต่างโปรแกรม สำหรับดูรูปภาพขนาดใหญ่
     def go_full_image(self, full_image_path):
         ## create new window
@@ -253,11 +305,7 @@ class Application(tk.Frame):
         # Tab 2
         tab1 = tk.Frame(tableLayout)
         tab1.pack(fill="both")
-        for row in range(5):
-            for column in range(6):
-                label = tk.Label(tab1,text = "r:" + str(row) + "c:" + str(column),padx=3,pady=3,bg="black",fg="white")
-                label.grid(row=row,column=column,sticky="nsew",padx=1,pady=1)
-                tab1.grid_columnconfigure(column,weight=1)
+        self.get_excel(tab1,full_image_path,'Sheet1')
         tableLayout.add(tab1, text="Excel")
         tableLayout.pack(fill="both")
         ## save button
