@@ -200,7 +200,7 @@ class Application(tk.Frame):
         ## create new window
         newWindow = tk.Toplevel(root)
         newWindow.title(full_image_path)
-        newWindow.geometry("900x500")
+        newWindow.geometry("1200x700")
         ## show picture graph
         filename, file_extension = os.path.splitext(full_image_path)
         # '/path/to/somefile.ext'
@@ -238,10 +238,28 @@ class Application(tk.Frame):
         image_label = tk.Label(right_frame, text=temp_text, justify="left", font=("Courier", 12))
         image_label.pack(side="top",anchor="nw")
         ## description text area
-        desc = tk.Text(right_frame, font=("Courier", 14))
+        frameDesc = tk.Frame(right_frame)
+        frameDesc.pack(fill="both")
+        tableLayout = ttk.Notebook(frameDesc)
+        # Tab 1
+        tab1 = tk.Frame(tableLayout)
+        tab1.pack(fill="both")
+        desc = tk.Text(tab1, font=("Courier", 14))
         desc.insert(tk.INSERT, self.read_description(full_image_path))
         desc.pack(side="top")
         desc.focus_set()
+        tableLayout.add(tab1,text="Description")
+        tableLayout.pack(fill="both")
+        # Tab 2
+        tab1 = tk.Frame(tableLayout)
+        tab1.pack(fill="both")
+        for row in range(5):
+            for column in range(6):
+                label = tk.Label(tab1,text = "r:" + str(row) + "c:" + str(column),padx=3,pady=3,bg="black",fg="white")
+                label.grid(row=row,column=column,sticky="nsew",padx=1,pady=1)
+                tab1.grid_columnconfigure(column,weight=1)
+        tableLayout.add(tab1, text="Excel")
+        tableLayout.pack(fill="both")
         ## save button
         save_btn = tk.Label(right_frame,text="SAVE", borderwidth=2, relief="raised", cursor="hand2")
         save_btn.bind("<Button-1>", lambda e, full_image_path=full_image_path, desc=desc: self.save_description_text_box(full_image_path, desc))
