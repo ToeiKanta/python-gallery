@@ -1,3 +1,8 @@
+import sys, os
+if sys.executable.endswith('pythonw.exe'):
+    sys.stdout = open(os.devnull, 'w')
+    sys.stderr = open(os.path.join(os.getenv('TEMP'), 'stderr-{}'.format(os.path.basename(sys.argv[0]))), "w")
+    
 import tkinter as tk
 from PIL import ImageTk, Image
 import os
@@ -408,6 +413,7 @@ if __name__ == '__main__':
     root = tk.Tk()
     ## ขนาดโปรแกรม
     root.geometry('1200x700')
+    root.iconbitmap('./icon.ico')
     ## ชื่อโปรแกรม
     root.title("Python Gallery")
     ## สร้างหน้าต่างโปรแกรมหลัก
