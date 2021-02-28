@@ -387,7 +387,7 @@ class Application(tk.Frame):
         for path, subdirs, files in os.walk(dataPath):
             for file in files:
                 filename, file_extension = os.path.splitext(file)
-                if (file.endswith(".gif") or file.endswith(".jpg") or file.endswith(".png") or file.endswith(".jpeg")) and not filename.endswith("-graph") and self.input.replace("\n", "") in file:
+                if (file.endswith(".gif") or file.endswith(".jpg") or file.endswith(".png") or file.endswith(".jpeg")) and (not filename.endswith("-graph")) and (self.input.replace("\n", "") in file):
                     if i < start_i:
                         i += 1
                         continue
