@@ -11,7 +11,8 @@ class ScrollableFrame(tk.Frame):
     def __init__(self, container, *args, **kwargs):
         super().__init__(container, *args, **kwargs)
         canvas = tk.Canvas(self)
-        scrollbar = tk.Scrollbar(self, orient="vertical", command=canvas.yview)
+        scrollbar_y = tk.Scrollbar(self, orient="vertical", command=canvas.yview)
+        scrollbar_x = tk.Scrollbar(self, orient="horizontal", command=canvas.xview)
         self.scrollable_frame = tk.Frame(canvas)
 
         self.scrollable_frame.bind(
@@ -22,11 +23,13 @@ class ScrollableFrame(tk.Frame):
         )
 
         canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-
-        canvas.configure(yscrollcommand=scrollbar.set)
-
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
+        canvas.configure(xscrollcommand=scrollbar_x.set)
+        canvas.configure(yscrollcommand=scrollbar_y.set)
+        canvas.grid(row=0, column=0, sticky=tk.N + tk.S + tk.E + tk.W)
+        scrollbar_x.grid(row=1, column=0, sticky=tk.N + tk.S + tk.E + tk.W)
+        scrollbar_y.grid(row=0, column=1, sticky=tk.N + tk.S + tk.E + tk.W)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
 ## component สำหรับสร้าง TextBox ที่จะเรียก Event เมื่อมีการเปลี่ยนแปลงข้อความใน TextBox
 class CustomText(tk.Text):
@@ -324,7 +327,7 @@ class Application(tk.Frame):
         tableLayout = ttk.Notebook(frameDesc)
         # Tab Excel
         tab1 = tk.Frame(tableLayout)
-        tab1.pack(fill="both")
+        tab1.pack(expand=1, fill="both")
         self.get_excel(tab1, full_image_path, 'Sheet1')
         tableLayout.add(tab1, text="Excel")
         tableLayout.pack(fill="both")
