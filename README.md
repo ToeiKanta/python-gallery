@@ -27,7 +27,7 @@
 
 2. copy Folder `./img` and `./icon.co` file to `./build/exe.win-amd64-3.7/` folder
 
-3. run program on `./build/exe.win-amd64-3.7//main.exe`
+3. run program on `./build/exe.win-amd64-3.7/main.exe`
 
 ## Notes
 - to save requirment </br>
